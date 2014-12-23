@@ -2,19 +2,21 @@
 
 Webcam live streaming in SSH terminal.
 
-[DEMO](https://asciinema.org/a/14968)
+[Watch a Demo](https://asciinema.org/a/14968)
 
 ## Install
 
 **Install binary from GitHub** if you don't have a Go development environment:
 
 ```bash
-curl -sL https://github.com/kfei/sshcam/releases/download/v1.0.0/sshcam-v1.0.0-x64.tar.bz | tar xj
+curl -sL https://github.com/kfei/sshcam/releases/download/0.9.0/sshcam-x64.tar.bz | tar xj
+mv sshcam /usr/local/bin/
 ```
 
-**Build from source** (also requires GCC):
+**Build from source**:
 
 ```bash
+# Build passed on Go version 1.4 and GCC version 4.9.2
 go get -u github.com/kfei/sshcam
 cd $GOPATH/src/github.com/kfei/sshcam
 go build
@@ -23,8 +25,9 @@ go install
 
 ## Quick Start
 
-Preview the live stream locally via `sshcam` (without any argument). Also note
-that you should run `sshcam` as an user with privilege to open `/dev/videoX`.
+Run `sshcam` directly (without any argument) to preview the live stream. Also
+note that you should run `sshcam` as an user with privilege to open
+`/dev/videoX`.
 
 Start the SSH server with all default settings:
 
@@ -38,8 +41,8 @@ Then on the client-side, run:
 ssh sshcam@your.server.ip -p 5566 # Default login: sshcam/p@ssw0rd
 ```
 
-Note that there are more configurable settings for server, have a look at
-`sshcam -h` for more details. For example,
+There are some configurable settings for server, have a look at `sshcam -h` for
+more details. For example,
 
 ```bash
 sshcam --server --listen=127.0.0.1 --port=22222 \
@@ -59,17 +62,17 @@ sshcam --server --listen=127.0.0.1 --port=22222 \
 There are still lots of interesting works to be done. Discussions and pull
 requests are both welcome. :)
 
-  - *P2P functions*: So that it can be a terminal video messenger.
-  - *Higher resolution*: Can this be done by using the Unicode block
+  - **P2P functions**: So that it can be a terminal video messenger.
+  - **Higher resolution**: Can this be done by using the Unicode block
     characters?
-  - *Colors*: In a *xterm-256color* terminal, display images with colors.
-  - *Port to other platforms*, maybe QT?
-  - *Improve algorithm*: Currently the image scaling is inefficient and lossy.
+  - **Colors**: In a *xterm-256color* terminal, display images with colors.
+  - **Port to other platforms**: Maybe by using QT?
+  - **Better algorithm**: Currently the image scaling is inefficient and lossy.
 
 ## Credits
 
 This project is inspired from [txtcam](https://github.com/dhotson/txtcam) and
-[Star Wars Movie in Telnet](telnet://towel.blinkenlights.nl).
+**Star Wars Movie in Telnet** (telnet://towel.blinkenlights.nl).
 
 ## License
 
