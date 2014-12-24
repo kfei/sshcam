@@ -8,14 +8,14 @@ Webcam live streaming in SSH terminal.
 
 There are several ways to install `sshcam`.
 
-**Install binary from GitHub** if you don't have a Go development environment:
+**Install binary from GitHub**:
 
 ```bash
 curl -sL https://github.com/kfei/sshcam/releases/download/0.9.1/sshcam-x64.tar.bz | tar xj
 mv sshcam /usr/local/bin/
 ```
 
-**Build from source**:
+**Build from source** if you have a Go development environment:
 
 ```bash
 # Build passed on Go version 1.4 and GCC version 4.9.2
@@ -32,7 +32,7 @@ git clone https://github.com/kfei/sshcam
 cd sshcam
 docker build -t sshcam .
 # After built, you can run sshcam via the Docker container.
-# FIXME: The privileged flag is for access /dev/videoX
+# FIXME: The privileged flag is for /dev/videoX access
 alias sshcam='docker run -it -p 5566:5566 --priviliged sshcam'
 ```
 
