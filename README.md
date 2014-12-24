@@ -9,7 +9,7 @@ Webcam live streaming in SSH terminal.
 **Install binary from GitHub** if you don't have a Go development environment:
 
 ```bash
-curl -sL https://github.com/kfei/sshcam/releases/download/0.9.0/sshcam-x64.tar.bz | tar xj
+curl -sL https://github.com/kfei/sshcam/releases/download/0.9.1/sshcam-x64.tar.bz | tar xj
 mv sshcam /usr/local/bin/
 ```
 
