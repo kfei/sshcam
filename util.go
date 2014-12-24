@@ -45,6 +45,11 @@ func rgb2Gray(r, g, b byte) float64 {
 }
 
 func scaleRGBArrayToGrayPixels(from []byte, tSize Size) []float64 {
+	// Check the image size actually captured by webcam
+	if size.Width*size.Height*3 > len(from) {
+		log.Fatal("Pixels conversion failed. Did you specified a size " +
+			"which is not supported by the webcam?")
+	}
 	// TODO: Improve this inefficient and loosy algorithm
 	var to []float64
 	skipX := size.Width / tSize.Width
@@ -80,7 +85,7 @@ func floatMin(x, y float64) float64 {
 func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	fmt.Println("Start streaming, press Ctrl-c to exit...")
+	log.Println("Start streaming, press Ctrl-c to exit...")
 	time.Sleep(3 * time.Second)
 
 	var chr string
