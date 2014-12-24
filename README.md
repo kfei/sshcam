@@ -6,6 +6,8 @@ Webcam live streaming in SSH terminal.
 
 ## Install
 
+There are several ways to install `sshcam`.
+
 **Install binary from GitHub** if you don't have a Go development environment:
 
 ```bash
@@ -21,6 +23,17 @@ go get -u github.com/kfei/sshcam
 cd $GOPATH/src/github.com/kfei/sshcam
 go build
 go install
+```
+
+**Build in Docker container**:
+
+```bash
+git clone https://github.com/kfei/sshcam
+cd sshcam
+docker build -t sshcam .
+# After built, you can run sshcam via the Docker container.
+# FIXME: The privileged flag is for access /dev/videoX
+alias sshcam='docker run -it -p 5566:5566 --priviliged sshcam'
 ```
 
 ## Quick Start
@@ -67,7 +80,7 @@ requests are both welcome. :)
     characters?
   - **Colors**: In a *xterm-256color* terminal, display images with colors.
   - **Port to other platforms**: Maybe by using QT?
-  - **Better algorithm**: Currently the image scaling is inefficient and lossy.
+  - **Better algorithm**: Currently the rendering is inefficient and lossy.
 
 ## Credits
 
