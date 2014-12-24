@@ -33,15 +33,14 @@ func updateTTYSize() <-chan string {
 				log.Fatal(err)
 			}
 			ttyStatus <- strings.TrimSuffix(string(out), "\n")
-			time.Sleep(100)
+			time.Sleep(300 * time.Millisecond)
 		}
 	}()
 	return ttyStatus
 }
 
 func rgb2Gray(r, g, b byte) float64 {
-	gray := (float64(r)*0.299 + float64(g)*0.587 + float64(b)*0.114)
-	return gray
+	return float64(r)*0.299 + float64(g)*0.587 + float64(b)*0.114
 }
 
 func scaleRGBArrayToGrayPixels(from []byte, tSize Size) []float64 {
@@ -85,6 +84,9 @@ func floatMin(x, y float64) float64 {
 func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
+	// clear screen
+	fmt.Printf("\033[2J")
+	fmt.Printf("\033[00H")
 	log.Println("Start streaming, press Ctrl-c to exit...")
 	time.Sleep(3 * time.Second)
 
@@ -101,7 +103,7 @@ func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 		// Fetch image from webcam
 		pixels := fetchGrayPixels(tty)
 
-		// Move cursor to top right and start to draw image
+		// Start to draw image
 		fmt.Printf("\033[00H")
 		for y := 0; y < tty.Height; y++ {
 			for x := 0; x < tty.Width; x++ {

@@ -45,7 +45,7 @@ There are several ways to install `sshcam`.
 **Install binary from GitHub**:
 
 ```bash
-curl -sL https://github.com/kfei/sshcam/releases/download/0.9.1/sshcam-x64.tar.bz | tar xj
+curl -sL https://github.com/kfei/sshcam/releases/download/0.9.2/sshcam-x64.tar.bz | tar xj
 mv sshcam /usr/local/bin/
 ```
 
