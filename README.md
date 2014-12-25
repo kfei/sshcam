@@ -2,7 +2,7 @@
 
 Webcam live streaming in SSH terminal.
 
-[Watch a Demo](https://asciinema.org/a/14968)
+[See it in action](https://asciinema.org/a/14968)
 
 ## Quick Start
 
@@ -23,7 +23,7 @@ ssh sshcam@your.server.ip -p 5566 # Default login: sshcam/p@ssw0rd
 ```
 
 There are some configurable settings for server, have a look at `sshcam -h` for
-more details. For example,
+more information. As an example:
 
 ```bash
 sshcam --server --listen=127.0.0.1 --port=22222 \
@@ -59,14 +59,14 @@ go build
 go install
 ```
 
-**Build in Docker container**:
+**Build and run in Docker container**:
 
 ```bash
 git clone https://github.com/kfei/sshcam
 cd sshcam
 docker build -t sshcam .
-# After built, you can run sshcam via the Docker container.
-# FIXME: The privileged flag is for /dev/videoX access
+# After built, you can run sshcam via the Docker container
+# The privileged flag is for /dev/videoX access (FIXME)
 alias sshcam='docker run -it -p 5566:5566 --priviliged sshcam'
 ```
 

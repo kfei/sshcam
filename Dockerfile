@@ -3,7 +3,7 @@ FROM base/archlinux
 MAINTAINER kfei <kfei@kfei.net>
 
 ENV GOPATH /go
-ENV PATH $GOPATH:$PATH
+ENV PATH $GOPATH/bin:$PATH
 
 RUN pacman -Syy && pacman -S --noconfirm gcc git go \
     && go get -u github.com/kfei/sshcam \
