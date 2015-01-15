@@ -22,6 +22,12 @@ func wxh2Size(s string) Size {
 	return Size{w, h}
 }
 
+func clearScreen() {
+	// TODO: Use terminfo
+	fmt.Printf("\033[2J")
+	fmt.Printf("\033[00H")
+}
+
 func updateTTYSize() <-chan string {
 	ttyStatus := make(chan string)
 	go func() {
@@ -84,9 +90,7 @@ func floatMin(x, y float64) float64 {
 func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	// clear screen
-	fmt.Printf("\033[2J")
-	fmt.Printf("\033[00H")
+	clearScreen()
 	log.Println("Start streaming, press Ctrl-c to exit...")
 	time.Sleep(3 * time.Second)
 
@@ -104,7 +108,7 @@ func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 		pixels := fetchGrayPixels(tty)
 
 		// Start to draw image
-		fmt.Printf("\033[00H")
+		clearScreen()
 		for y := 0; y < tty.Height; y++ {
 			for x := 0; x < tty.Width; x++ {
 				brightness := pixels[y*tty.Width+x]
