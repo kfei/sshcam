@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"os/exec"
 	"strconv"
@@ -11,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kfei/sshcam/img2xterm"
 	webcam "github.com/kfei/sshcam/webcam/v4l2"
 )
 
@@ -25,6 +25,10 @@ func wxh2Size(s string) Size {
 func clearScreen() {
 	// TODO: Use terminfo
 	fmt.Printf("\033[2J")
+}
+
+func resetCursor() {
+	// TODO: Use terminfo
 	fmt.Printf("\033[00H")
 }
 
@@ -32,6 +36,7 @@ func updateTTYSize() <-chan string {
 	ttyStatus := make(chan string)
 	go func() {
 		for {
+			// TODO: Use syscall.Syscall?
 			cmd := exec.Command("stty", "size")
 			cmd.Stdin = os.Stdin
 			out, err := cmd.Output()
@@ -45,99 +50,45 @@ func updateTTYSize() <-chan string {
 	return ttyStatus
 }
 
-func rgb2Gray(r, g, b byte) float64 {
-	return float64(r)*0.299 + float64(g)*0.587 + float64(b)*0.114
-}
-
-func scaleRGBArrayToGrayPixels(from []byte, tSize Size) []float64 {
+func grabRGBPixels(s Size) (ret []byte) {
+	rgbArray := webcam.GrabFrame()
 	// Check the image size actually captured by webcam
-	if size.Width*size.Height*3 > len(from) {
+	if size.Width*size.Height*3 > len(rgbArray) {
 		log.Fatal("Pixels conversion failed. Did you specified a size " +
 			"which is not supported by the webcam?")
 	}
+
+	// Assuming the captured image is larger than terminal size
 	// TODO: Improve this inefficient and loosy algorithm
-	var to []float64
-	skipX := size.Width / tSize.Width
-	skipY := size.Height / tSize.Height
-	for y := 0; y < tSize.Height; y++ {
-		for x := 0; x < tSize.Width; x++ {
+	skipX, skipY := size.Width/s.Width, size.Height/s.Height
+	for y := 0; y < s.Height; y++ {
+		for x := 0; x < s.Width; x++ {
 			cur := size.Width*3*y*skipY + 3*x*skipX
-			r, g, b := from[cur], from[cur+1], from[cur+2]
-			brightness := rgb2Gray(r, g, b) / 255.0
-			to = append(to, brightness)
+			ret = append(ret, rgbArray[cur], rgbArray[cur+1], rgbArray[cur+2])
 		}
 	}
-	return to
-}
-
-func fetchGrayPixels(s Size) []float64 {
-	rgbArray := webcam.GrabFrame()
-	return scaleRGBArrayToGrayPixels(rgbArray, s)
-}
-
-func floatMod(x, y float64) float64 {
-	return x - y*math.Floor(x/y)
-}
-
-func floatMin(x, y float64) float64 {
-	if x-y > 0 {
-		return y
-	} else {
-		return x
-	}
+	return
 }
 
 func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
+	resetCursor()
 	clearScreen()
 	log.Println("Start streaming, press Ctrl-c to exit...")
-	time.Sleep(3 * time.Second)
+	time.Sleep(1500 * time.Millisecond)
 
-	var chr string
-	tty := Size{0, 0}
+	ttySize := Size{0, 0}
 
 	for {
 		// Update TTY size before every draw (synchronous)
 		curSize := strings.Split(<-ttyStatus, " ")
-		h, _ := strconv.Atoi(curSize[0])
-		w, _ := strconv.Atoi(curSize[1])
-		tty.Width, tty.Height = w, h
+		ttySize.Height, _ = strconv.Atoi(curSize[0])
+		ttySize.Width, _ = strconv.Atoi(curSize[1])
 
-		// Fetch image from webcam
-		pixels := fetchGrayPixels(tty)
-
-		// Start to draw image
-		clearScreen()
-		for y := 0; y < tty.Height; y++ {
-			for x := 0; x < tty.Width; x++ {
-				brightness := pixels[y*tty.Width+x]
-				bg := brightness*23 + 232
-				fg := floatMin(255, bg+1)
-				mod := floatMod(bg, 1.0)
-
-				switch {
-				case mod < 0.2:
-					chr = " "
-				case mod < 0.4:
-					chr = "░"
-				case mod < 0.6:
-					chr = "▒"
-				case mod < 0.8:
-					bg, fg = fg, bg
-					chr = "▒"
-				default:
-					bg, fg = fg, bg
-					chr = "░"
-				}
-
-				// TODO: Try to reduce the number of Printf call
-				fmt.Printf(
-					"\033[48;5;%dm\033[38;5;%dm%s", int(bg), int(fg), chr)
-			}
-			if y < tty.Height-1 {
-				fmt.Printf("\n")
-			}
-		}
+		// Fetch image from webcam and call img2xterm to draw
+		rgbRaw := grabRGBPixels(ttySize)
+		resetCursor()
+		img2xterm.DrawRGB(rgbRaw, ttySize.Width, ttySize.Height, false)
 	}
 }
