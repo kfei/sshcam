@@ -1,6 +1,8 @@
 package v4l2
 
-import "fmt"
+import (
+	"log"
+)
 
 // #include "webcam_wrapper.h"
 import "C"
@@ -18,7 +20,7 @@ func OpenWebcam(path string, width, height int) {
 	// defer C.free(unsafe.Pointer(w))
 
 	// Now open the device
-	fmt.Println("Webcam opened")
+	log.Println("Webcam opened")
 }
 
 func GrabFrame() []byte {
@@ -33,6 +35,6 @@ func GrabFrame() []byte {
 
 func CloseWebcam() {
 	if C.go_close_webcam(w) == 0 {
-		fmt.Println("Webcam closed")
+		log.Println("Webcam closed")
 	}
 }
