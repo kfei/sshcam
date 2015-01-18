@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strconv"
 	"strings"
 	"sync"
@@ -25,6 +26,10 @@ func wxh2Size(s string) Size {
 func clearScreen() {
 	// TODO: Use terminfo
 	fmt.Printf("\033[2J")
+}
+
+func restoreScreen() {
+	fmt.Print("\033[39m\033[49m")
 }
 
 func resetCursor() {
@@ -72,7 +77,15 @@ func grabRGBPixels(ttySize Size) (ret []byte) {
 }
 
 func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
+	var interrupt bool = false
 	defer wg.Done()
+
+	sigchan := make(chan os.Signal, 1)
+	signal.Notify(sigchan, os.Interrupt)
+	go func() {
+		<-sigchan
+		interrupt = true
+	}()
 
 	log.Println("Start streaming, press Ctrl-c to exit...")
 	time.Sleep(1500 * time.Millisecond)
@@ -80,7 +93,7 @@ func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 
 	ttySize := Size{0, 0}
 
-	for {
+	for !interrupt {
 		// Update TTY size before every draw (synchronous)
 		curSize := strings.Split(<-ttyStatus, " ")
 		ttySize.Height, _ = strconv.Atoi(curSize[0])
@@ -91,4 +104,6 @@ func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 		resetCursor()
 		img2xterm.DrawRGB(rgbRaw, ttySize.Width, ttySize.Height*2, color)
 	}
+
+	restoreScreen()
 }
