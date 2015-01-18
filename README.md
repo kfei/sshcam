@@ -2,7 +2,9 @@
 
 Webcam live streaming in SSH terminal.
 
-[See it in action](https://asciinema.org/a/14968)
+## See It In Action
+
+[![ScreenShot](screenshot.png?raw=true)](http://youtu.be/UIc7q-Zf6DY)
 
 ## Quick Start
 
