@@ -50,7 +50,7 @@ func updateTTYSize() <-chan string {
 	return ttyStatus
 }
 
-func grabRGBPixels(s Size) (ret []byte) {
+func grabRGBPixels(ttySize Size) (ret []byte) {
 	rgbArray := webcam.GrabFrame()
 	// Check the image size actually captured by webcam
 	if size.Width*size.Height*3 > len(rgbArray) {
@@ -59,10 +59,11 @@ func grabRGBPixels(s Size) (ret []byte) {
 	}
 
 	// Assuming the captured image is larger than terminal size
+	// TODO: Scale up the image when termial size is bigger
 	// TODO: Improve this inefficient and loosy algorithm
-	skipX, skipY := size.Width/s.Width, size.Height/s.Height
-	for y := 0; y < s.Height; y++ {
-		for x := 0; x < s.Width; x++ {
+	skipX, skipY := size.Width/ttySize.Width, size.Height/(ttySize.Height*2)
+	for y := 0; y < ttySize.Height*2; y++ {
+		for x := 0; x < ttySize.Width; x++ {
 			cur := size.Width*3*y*skipY + 3*x*skipX
 			ret = append(ret, rgbArray[cur], rgbArray[cur+1], rgbArray[cur+2])
 		}
@@ -73,10 +74,9 @@ func grabRGBPixels(s Size) (ret []byte) {
 func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	resetCursor()
-	clearScreen()
 	log.Println("Start streaming, press Ctrl-c to exit...")
 	time.Sleep(1500 * time.Millisecond)
+	clearScreen()
 
 	ttySize := Size{0, 0}
 
@@ -89,6 +89,6 @@ func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 		// Fetch image from webcam and call img2xterm to draw
 		rgbRaw := grabRGBPixels(ttySize)
 		resetCursor()
-		img2xterm.DrawRGB(rgbRaw, ttySize.Width, ttySize.Height, false)
+		img2xterm.DrawRGB(rgbRaw, ttySize.Width, ttySize.Height*2, false)
 	}
 }
