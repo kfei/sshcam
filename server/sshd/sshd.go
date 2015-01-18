@@ -70,7 +70,7 @@ func readLocalPrivateKey() ssh.Signer {
 	return private
 }
 
-func Run(user, pass, host, port string) {
+func Run(user, pass, host, port string, sshcamArgs []string) {
 	config := &ssh.ServerConfig{
 		NoClientAuth: false,
 		PasswordCallback: func(c ssh.ConnMetadata,
@@ -112,7 +112,7 @@ func Run(user, pass, host, port string) {
 		// Print incoming out-of-band Requests
 		go handleRequests(reqs)
 		// Accept all channels
-		go handleChannels(chans)
+		go handleChannels(chans, sshcamArgs)
 	}
 }
 
@@ -122,7 +122,7 @@ func handleRequests(reqs <-chan *ssh.Request) {
 	}
 }
 
-func handleChannels(chans <-chan ssh.NewChannel) {
+func handleChannels(chans <-chan ssh.NewChannel, sshcamArgs []string) {
 	// Service the incoming Channel channel.
 	for newChannel := range chans {
 		if t := newChannel.ChannelType(); t != "session" {
@@ -140,7 +140,7 @@ func handleChannels(chans <-chan ssh.NewChannel) {
 		log.Print("Creating pty...")
 
 		// Can this always work without PATH specified?
-		c := exec.Command("sshcam")
+		c := exec.Command("sshcam", sshcamArgs...)
 
 		f, err := pty.Start(c)
 		if err != nil {

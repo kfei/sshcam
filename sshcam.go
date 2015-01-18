@@ -57,7 +57,11 @@ func main() {
 	case h:
 		flag.PrintDefaults()
 	case server:
-		sshd.Run(user, pass, listen, strconv.Itoa(port))
+		sshcamArgs := []string{"--device=" + device, "--size=" + sizeFlag}
+		if color {
+			sshcamArgs = append(sshcamArgs, "--color")
+		}
+		sshd.Run(user, pass, listen, strconv.Itoa(port), sshcamArgs)
 	default:
 		var wg sync.WaitGroup
 
