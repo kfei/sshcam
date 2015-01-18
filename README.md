@@ -6,8 +6,13 @@ Webcam live streaming in SSH terminal.
 
 ## Quick Start
 
-Run `sshcam` directly (without any argument) to preview the live stream. Also
-note that you should run `sshcam` as an user with privilege to open
+To preview the stream, run *sshcam* without the `--server` argument:
+
+```bash
+sshcam --color --size=1280x720
+```
+
+Note that you should run *sshcam* as an user with privilege to open
 `/dev/videoX`.
 
 Start the SSH server with all default settings:
@@ -28,7 +33,7 @@ more information. As an example:
 ```bash
 sshcam --server --listen=127.0.0.1 --port=22222 \
        --user=john --pass=nhoj \
-       --device=/dev/video0 --size=1280x720 --color
+       --device=/dev/video0 --color --size=1280x720
 ```
 
 ## Requirements
@@ -40,7 +45,7 @@ sshcam --server --listen=127.0.0.1 --port=22222 \
 
 ## Installation
 
-There are several ways to install `sshcam`.
+There are several ways to install *sshcam*.
 
 **Install binary from GitHub**:
 
@@ -76,10 +81,9 @@ There are still lots of interesting works to be done. Discussions and pull
 requests are both welcome. :)
 
   - **Better performance**: Currently the pixel rendering is inefficient.
-  - **Even higher resolution**: Use Unicode quadrant block characters [2596 to
+  - **Even higher resolution**: Try Unicode quadrant block characters [2596 to
     259F](http://www.alanwood.net/unicode/block_elements.html).
   - **Port to other platforms**: Maybe by using QT?
-  - **P2P functions**: So that it can be a terminal video messenger.
 
 ## License
 
