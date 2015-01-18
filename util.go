@@ -89,6 +89,6 @@ func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 		// Fetch image from webcam and call img2xterm to draw
 		rgbRaw := grabRGBPixels(ttySize)
 		resetCursor()
-		img2xterm.DrawRGB(rgbRaw, ttySize.Width, ttySize.Height*2, false)
+		img2xterm.DrawRGB(rgbRaw, ttySize.Width, ttySize.Height*2, color)
 	}
 }

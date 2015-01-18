@@ -14,7 +14,7 @@ type Size struct {
 }
 
 var (
-	h, server                            bool
+	h, server, color                     bool
 	port                                 int
 	listen, device, sizeFlag, user, pass string
 	size                                 Size
@@ -38,6 +38,9 @@ func init() {
 
 	flag.StringVar(&sizeFlag, []string{"-size"}, "640x480",
 		"image dimension, must be supported by the device")
+
+	flag.BoolVar(&color, []string{"c", "-color"}, false,
+		"turn on color")
 
 	flag.StringVar(&user, []string{"-user"}, "sshcam",
 		"username for SSH login")

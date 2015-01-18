@@ -23,6 +23,14 @@ func floatMin(x, y float64) float64 {
 	return x
 }
 
+func rawRGB2Pixels(raw []byte) (ret [][3]byte) {
+	for cur := 0; cur < len(raw); cur += 3 {
+		pixel := [3]byte{raw[cur], raw[cur+1], raw[cur+2]}
+		ret = append(ret, pixel)
+	}
+	return
+}
+
 func rawRGB2BrightnessPixels(raw []byte) (ret []float64) {
 	for cur := 0; cur < len(raw); cur += 3 {
 		r, g, b := raw[cur], raw[cur+1], raw[cur+2]
@@ -32,10 +40,37 @@ func rawRGB2BrightnessPixels(raw []byte) (ret []float64) {
 	return
 }
 
-func DrawRGB(raw []byte, width, height int, color bool) {
-	var brightness1, brightness2 int
-	if color {
-		// TODO: Draw image with color
+func DrawRGB(raw []byte, width, height int, colorful bool) {
+	var color1, color2, brightness1, brightness2 int
+	if colorful {
+		// Draw image with color
+		pixels := rawRGB2Pixels(raw)
+		for y := 0; y < height; y += 2 {
+			for x := 0; x < width; x++ {
+				// Compute the color of upper block
+				r1 := int(pixels[y*width+x][0])
+				g1 := int(pixels[y*width+x][1])
+				b1 := int(pixels[y*width+x][2])
+				color1 = rgb2Xterm(r1, g1, b1)
+
+				// Compute the color of lower block
+				if (y + 1) < height {
+					r2 := int(pixels[(y+1)*width+x][0])
+					g2 := int(pixels[(y+1)*width+x][1])
+					b2 := int(pixels[(y+1)*width+x][2])
+					color2 = rgb2Xterm(r2, g2, b2)
+				} else {
+					color2 = colorTransparent
+				}
+
+				// Draw onn pixel
+				bifurcate(color1, color2)
+			}
+			if (y + 2) < height {
+				fmt.Printf("\n")
+			}
+		}
+
 	} else {
 		// Draw image in grayscale
 		pixels := rawRGB2BrightnessPixels(raw)
