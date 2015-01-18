@@ -64,7 +64,10 @@ func grabRGBPixels(ttySize Size) (ret []byte) {
 	}
 
 	// Assuming the captured image is larger than terminal size
-	// TODO: Scale up the image when termial size is bigger
+	if ttySize.Width*ttySize.Height*2 > len(rgbArray)/3 {
+		log.Fatal("Capture size too small.")
+	}
+
 	// TODO: Improve this inefficient and loosy algorithm
 	skipX, skipY := size.Width/ttySize.Width, size.Height/(ttySize.Height*2)
 	for y := 0; y < ttySize.Height*2; y++ {
