@@ -4,7 +4,7 @@ Webcam live streaming in SSH terminal.
 
 ## See It In Action
 
-[![ScreenShot](screenshot.png?raw=true)](http://youtu.be/UIc7q-Zf6DY)
+[![ScreenShot](screenshot.png?raw=true)](http://youtu.be/SlBTmXILdUQ)
 
 ## Quick Start
 
