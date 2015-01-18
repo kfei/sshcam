@@ -28,12 +28,12 @@ more information. As an example:
 ```bash
 sshcam --server --listen=127.0.0.1 --port=22222 \
        --user=john --pass=nhoj \
-       --device=/dev/video0 --size=1280x720
+       --device=/dev/video0 --size=1280x720 --color
 ```
 
 ## Requirements
 
-  - On the client-side, a standard `ssh` utility is enough.
+  - On the client-side, a `ssh` utility with 256-colors support is enough.
   - Video device is supported by 
     [V4L2](https://www.kernel.org/doc/Documentation/video4linux/v4l2-framework.txt),
     which means the server is currently Linux only.
@@ -75,17 +75,11 @@ alias sshcam='docker run -it -p 5566:5566 --priviliged sshcam'
 There are still lots of interesting works to be done. Discussions and pull
 requests are both welcome. :)
 
-  - **P2P functions**: So that it can be a terminal video messenger.
-  - **Higher resolution**: Can this be done by using the Unicode block
-    characters?
-  - **Colors**: In a *xterm-256color* terminal, display images with colors.
+  - **Better performance**: Currently the pixel rendering is inefficient.
+  - **Even higher resolution**: Use Unicode quadrant block characters [2596 to
+    259F](http://www.alanwood.net/unicode/block_elements.html).
   - **Port to other platforms**: Maybe by using QT?
-  - **Better algorithm**: Currently the rendering is inefficient and lossy.
-
-## Credits
-
-This project is inspired from [txtcam](https://github.com/dhotson/txtcam) and
-**Star Wars Movie in Telnet** (telnet://towel.blinkenlights.nl).
+  - **P2P functions**: So that it can be a terminal video messenger.
 
 ## License
 
