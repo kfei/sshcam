@@ -55,7 +55,7 @@ func updateTTYSize() <-chan string {
 	return ttyStatus
 }
 
-func grabRGBPixels(ttySize Size) (ret []byte) {
+func grabRGBPixels(ttySize Size, wInc, hInc int) (ret []byte) {
 	rgbArray := webcam.GrabFrame()
 	// Check the image size actually captured by webcam
 	if size.Width*size.Height*3 > len(rgbArray) {
@@ -64,13 +64,13 @@ func grabRGBPixels(ttySize Size) (ret []byte) {
 	}
 
 	// Assuming the captured image is larger than terminal size
-	if ttySize.Width*ttySize.Height*2 > len(rgbArray)/3 {
+	if ttySize.Width*ttySize.Height*hInc > len(rgbArray)/3 {
 		log.Fatal("Capture size too small.")
 	}
 
 	// TODO: Improve this inefficient and loosy algorithm
-	skipX, skipY := size.Width/ttySize.Width, size.Height/(ttySize.Height*2)
-	for y := 0; y < ttySize.Height*2; y++ {
+	skipX, skipY := size.Width/ttySize.Width, size.Height/(ttySize.Height*hInc)
+	for y := 0; y < ttySize.Height*hInc; y++ {
 		for x := 0; x < ttySize.Width; x++ {
 			cur := size.Width*3*y*skipY + 3*x*skipX
 			ret = append(ret, rgbArray[cur], rgbArray[cur+1], rgbArray[cur+2])
@@ -102,10 +102,16 @@ func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 		ttySize.Height, _ = strconv.Atoi(curSize[0])
 		ttySize.Width, _ = strconv.Atoi(curSize[1])
 
-		// Fetch image from webcam and call img2xterm to draw
-		rgbRaw := grabRGBPixels(ttySize)
 		resetCursor()
-		img2xterm.DrawRGB(rgbRaw, ttySize.Width, ttySize.Height*2, color)
+
+		// Fetch image from webcam and call img2xterm to draw
+		if asciiOnly {
+			rgbRaw := grabRGBPixels(ttySize, 1, 1)
+			img2xterm.AsciiDrawRGB(rgbRaw, ttySize.Width, ttySize.Height)
+		} else {
+			rgbRaw := grabRGBPixels(ttySize, 1, 2)
+			img2xterm.DrawRGB(rgbRaw, ttySize.Width, ttySize.Height*2, color)
+		}
 	}
 
 	restoreScreen()

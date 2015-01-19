@@ -63,7 +63,7 @@ func DrawRGB(raw []byte, width, height int, colorful bool) {
 					color2 = colorTransparent
 				}
 
-				// Draw onn pixel
+				// Draw one pixel
 				bifurcate(color1, color2)
 			}
 			if (y + 2) < height {
@@ -126,4 +126,38 @@ func bifurcate(color1, color2 int) {
 	oldbg, oldfg = bg, fg
 
 	fmt.Print(str)
+}
+
+func AsciiDrawRGB(raw []byte, width, height int) {
+	var chr string
+	pixels := rawRGB2BrightnessPixels(raw)
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			brightness := pixels[y*width+x]
+			bg := brightness*23 + 232
+			fg := floatMin(255, bg+1)
+			mod := floatMod(bg, 1.0)
+
+			switch {
+			case mod < 0.2:
+				chr = " "
+			case mod < 0.4:
+				chr = "░"
+			case mod < 0.6:
+				chr = "▒"
+			case mod < 0.8:
+				bg, fg = fg, bg
+				chr = "▒"
+			default:
+				bg, fg = fg, bg
+				chr = "░"
+			}
+
+			fmt.Printf(
+				"\033[48;5;%dm\033[38;5;%dm%s", int(bg), int(fg), chr)
+		}
+		if (y + 1) < height {
+			fmt.Printf("\n")
+		}
+	}
 }

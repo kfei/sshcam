@@ -14,7 +14,7 @@ type Size struct {
 }
 
 var (
-	h, server, color                     bool
+	h, server, color, asciiOnly          bool
 	port                                 int
 	listen, device, sizeFlag, user, pass string
 	size                                 Size
@@ -41,6 +41,9 @@ func init() {
 
 	flag.BoolVar(&color, []string{"c", "-color"}, false,
 		"turn on color")
+
+	flag.BoolVar(&asciiOnly, []string{"-ascii-only"}, false,
+		"fallback to use ASCII characters only")
 
 	flag.StringVar(&user, []string{"-user"}, "sshcam",
 		"username for SSH login")
