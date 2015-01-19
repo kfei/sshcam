@@ -16,11 +16,20 @@ import (
 )
 
 func wxh2Size(s string) Size {
-	// TODO: Also reads in "w*h" and "w h" format
-	splits := strings.Split(s, "x")
-	w, _ := strconv.Atoi(splits[0])
-	h, _ := strconv.Atoi(splits[1])
-	return Size{w, h}
+	splits := [...]string{"x", "*", " "}
+	for i := range splits {
+		splitted := strings.Split(s, splits[i])
+		if len(splitted) != 2 {
+			continue
+		}
+		w, err1 := strconv.Atoi(splitted[0])
+		h, err2 := strconv.Atoi(splitted[1])
+		if err1 == nil && err2 == nil {
+			return Size{w, h}
+		}
+	}
+	log.Println("Invalid argument: --size, fallback to default...")
+	return wxh2Size("640x480")
 }
 
 func clearScreen() {
@@ -115,4 +124,5 @@ func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 	}
 
 	restoreScreen()
+	log.Println("Exiting...")
 }
