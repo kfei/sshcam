@@ -11,7 +11,7 @@ const (
 	colorTransparent = iota
 )
 
-var oldfg, oldbg = colorUndef, colorUndef
+var oldfg, oldbg uint8 = colorUndef, colorUndef
 
 func floatMod(x, y float64) float64 {
 	return x - y*math.Floor(x/y)
@@ -42,23 +42,23 @@ func rawRGB2BrightnessPixels(raw []byte) (ret []float64) {
 }
 
 func DrawRGB(raw []byte, width, height int, colorful bool) {
-	var color1, color2, brightness1, brightness2 int
+	var color1, color2, brightness1, brightness2 uint8
 	if colorful {
 		// Draw image with color
 		pixels := rawRGB2Pixels(raw)
 		for y := 0; y < height; y += 2 {
 			for x := 0; x < width; x++ {
 				// Compute the color of upper block
-				r1 := int(pixels[y*width+x][0])
-				g1 := int(pixels[y*width+x][1])
-				b1 := int(pixels[y*width+x][2])
+				r1 := pixels[y*width+x][0]
+				g1 := pixels[y*width+x][1]
+				b1 := pixels[y*width+x][2]
 				color1 = rgb2Xterm(r1, g1, b1)
 
 				// Compute the color of lower block
 				if (y + 1) < height {
-					r2 := int(pixels[(y+1)*width+x][0])
-					g2 := int(pixels[(y+1)*width+x][1])
-					b2 := int(pixels[(y+1)*width+x][2])
+					r2 := pixels[(y+1)*width+x][0]
+					g2 := pixels[(y+1)*width+x][1]
+					b2 := pixels[(y+1)*width+x][2]
 					color2 = rgb2Xterm(r2, g2, b2)
 				} else {
 					color2 = colorTransparent
@@ -79,9 +79,9 @@ func DrawRGB(raw []byte, width, height int, colorful bool) {
 		pixels := rawRGB2BrightnessPixels(raw)
 		for y := 0; y < height; y += 2 {
 			for x := 0; x < width; x++ {
-				brightness1 = int(pixels[y*width+x]*23) + 232
+				brightness1 = uint8(pixels[y*width+x]*23) + 232
 				if (y + 1) < height {
-					brightness2 = int(pixels[(y+1)*width+x]*23) + 232
+					brightness2 = uint8(pixels[(y+1)*width+x]*23) + 232
 				} else {
 					brightness2 = colorTransparent
 				}
@@ -98,11 +98,11 @@ func DrawRGB(raw []byte, width, height int, colorful bool) {
 	}
 }
 
-func dot(x, y, color1, color2 int) {
+func dot(x, y int, color1, color2 uint8) {
 	var sequence string
 
 	// Move cursor
-	sequence += "\033[" + strconv.Itoa(y) + ";" + strconv.Itoa(x) + "H"
+	sequence += "\033[" + strconv.Itoa(y+1) + ";" + strconv.Itoa(x+1) + "H"
 
 	fg, bg := oldfg, oldbg
 
@@ -124,7 +124,7 @@ func dot(x, y, color1, color2 int) {
 		if bg == colorTransparent {
 			sequence += "\033[49m"
 		} else {
-			sequence += "\033[48;5;" + strconv.Itoa(bg) + "m"
+			sequence += "\033[48;5;" + strconv.Itoa(int(bg)) + "m"
 		}
 	}
 
@@ -132,7 +132,7 @@ func dot(x, y, color1, color2 int) {
 		if fg == colorUndef {
 			sequence += "\033[39m"
 		} else {
-			sequence += "\033[38;5;" + strconv.Itoa(fg) + "m"
+			sequence += "\033[38;5;" + strconv.Itoa(int(fg)) + "m"
 		}
 	}
 

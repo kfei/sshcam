@@ -6,9 +6,9 @@ import (
 
 var chromaWeight float64 = 1.0
 var labtable [256 * 3]float64
-var valueRange [6]int = [6]int{0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff}
+var valueRange [6]uint8 = [6]uint8{0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff}
 
-func xterm2RGB(color int, rgb []int) {
+func xterm2RGB(color uint8, rgb []uint8) {
 	if color < 232 {
 		color -= 16
 		rgb[0] = valueRange[(color/36)%6]
@@ -21,7 +21,7 @@ func xterm2RGB(color int, rgb []int) {
 	}
 }
 
-func srgb2Lab(red, green, blue int, l, aa, bb *float64) {
+func srgb2Lab(red, green, blue uint8, l, aa, bb *float64) {
 	var r, g, b float64
 	var rl, gl, bl float64
 	var x, y, z float64
@@ -97,7 +97,7 @@ func cie94(l1, a1, b1, l2, a2, b2 float64) (distance float64) {
 	return
 }
 
-func rgb2Xterm(r, g, b int) (ret int) {
+func rgb2Xterm(r, g, b uint8) (ret uint8) {
 	// Use CIE94 algorithm to compute the color distance
 	var i int = 16
 	var d, smallestDistance = math.MaxFloat64, math.MaxFloat64
@@ -109,7 +109,7 @@ func rgb2Xterm(r, g, b int) (ret int) {
 		d = cie94(l, aa, bb, labtable[i*3], labtable[i*3+1], labtable[i*3+2])
 		if d < smallestDistance {
 			smallestDistance = d
-			ret = i
+			ret = uint8(i)
 		}
 	}
 
@@ -117,11 +117,11 @@ func rgb2Xterm(r, g, b int) (ret int) {
 }
 
 func init() {
-	var rgb []int = []int{0, 0, 0}
+	var rgb []uint8 = []uint8{0, 0, 0}
 	var l, a, b float64
 
 	for i := 16; i < 256; i++ {
-		xterm2RGB(i, rgb)
+		xterm2RGB(uint8(i), rgb)
 		srgb2Lab(rgb[0], rgb[1], rgb[2], &l, &a, &b)
 		labtable[i*3] = l
 		labtable[i*3+1] = a

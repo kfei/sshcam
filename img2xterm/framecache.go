@@ -5,7 +5,7 @@ const (
 	cacheYSize int = 120
 )
 
-type FrameCache [cacheXSize][cacheYSize][2]int
+type FrameCache [cacheXSize][cacheYSize][2]uint8
 
 var fCache FrameCache
 
