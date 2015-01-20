@@ -3,6 +3,7 @@ package img2xterm
 import (
 	"fmt"
 	"math"
+	"strconv"
 )
 
 const (
@@ -63,14 +64,16 @@ func DrawRGB(raw []byte, width, height int, colorful bool) {
 					color2 = colorTransparent
 				}
 
-				// Draw one pixel
-				bifurcate(color1, color2)
+				// Draw one pixel (if needed)
+				if color1 != fCache[x][y/2][0] || color2 != fCache[x][y/2][1] {
+					dot(x, y/2, color1, color2)
+					fCache[x][y/2][0], fCache[x][y/2][1] = color1, color2
+				}
 			}
 			if (y + 2) < height {
 				fmt.Printf("\n")
 			}
 		}
-
 	} else {
 		// Draw image in grayscale
 		pixels := rawRGB2BrightnessPixels(raw)
@@ -82,7 +85,11 @@ func DrawRGB(raw []byte, width, height int, colorful bool) {
 				} else {
 					brightness2 = colorTransparent
 				}
-				bifurcate(brightness1, brightness2)
+				// Draw one pixel (if needed)
+				if brightness1 != fCache[x][y/2][0] || brightness2 != fCache[x][y/2][1] {
+					dot(x, y/2, brightness1, brightness2)
+					fCache[x][y/2][0], fCache[x][y/2][1] = brightness1, brightness2
+				}
 			}
 			if (y + 2) < height {
 				fmt.Printf("\n")
@@ -91,8 +98,14 @@ func DrawRGB(raw []byte, width, height int, colorful bool) {
 	}
 }
 
-func bifurcate(color1, color2 int) {
+func dot(x, y, color1, color2 int) {
+	var sequence string
+
+	// Move cursor
+	sequence += "\033[" + strconv.Itoa(y) + ";" + strconv.Itoa(x) + "H"
+
 	fg, bg := oldfg, oldbg
+
 	// The lower half block "▄"
 	var str = "\xe2\x96\x84"
 
@@ -109,23 +122,23 @@ func bifurcate(color1, color2 int) {
 
 	if bg != oldbg {
 		if bg == colorTransparent {
-			fmt.Print("\033[49m")
+			sequence += "\033[49m"
 		} else {
-			fmt.Printf("\033[48;5;%dm", bg)
+			sequence += "\033[48;5;" + strconv.Itoa(bg) + "m"
 		}
 	}
 
 	if fg != oldfg {
 		if fg == colorUndef {
-			fmt.Print("\033[39m")
+			sequence += "\033[39m"
 		} else {
-			fmt.Printf("\033[38;5;%dm", fg)
+			sequence += "\033[38;5;" + strconv.Itoa(fg) + "m"
 		}
 	}
 
 	oldbg, oldfg = bg, fg
 
-	fmt.Print(str)
+	fmt.Print(sequence + str)
 }
 
 func AsciiDrawRGB(raw []byte, width, height int) {

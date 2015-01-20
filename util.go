@@ -15,6 +15,8 @@ import (
 	webcam "github.com/kfei/sshcam/webcam/v4l2"
 )
 
+var ttySize Size = Size{0, 0}
+
 func wxh2Size(s string) Size {
 	splits := [...]string{"x", "*", " "}
 	for i := range splits {
@@ -57,7 +59,21 @@ func updateTTYSize() <-chan string {
 			if err != nil {
 				log.Fatal(err)
 			}
-			ttyStatus <- strings.TrimSuffix(string(out), "\n")
+
+			// An example will be "25 \n80"
+			curSize := strings.TrimSuffix(string(out), "\n")
+
+			// If TTY size has been changed, clear the frame cache
+			oldSize := strconv.Itoa(ttySize.Height) + " " + strconv.Itoa(ttySize.Width)
+			if curSize != oldSize && oldSize != "0 0" {
+				go img2xterm.ClearCache()
+				resetCursor()
+				clearScreen()
+			}
+
+			ttyStatus <- curSize
+
+			// To simulate a limit of FPS
 			time.Sleep(300 * time.Millisecond)
 		}
 	}()
@@ -68,7 +84,7 @@ func grabRGBPixels(ttySize Size, wInc, hInc int) (ret []byte) {
 	rgbArray := webcam.GrabFrame()
 	// Check the image size actually captured by webcam
 	if size.Width*size.Height*3 > len(rgbArray) {
-		log.Fatal("Pixels conversion failed. Did you specified a size " +
+		log.Fatal("Pixels conversion failed. Have you specified a size " +
 			"which is not supported by the webcam?")
 	}
 
@@ -102,8 +118,6 @@ func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 	log.Println("Start streaming, press Ctrl-c to exit...")
 	time.Sleep(1500 * time.Millisecond)
 	clearScreen()
-
-	ttySize := Size{0, 0}
 
 	for !interrupt {
 		// Update TTY size before every draw (synchronous)
