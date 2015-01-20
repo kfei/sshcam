@@ -36,16 +36,18 @@ func wxh2Size(s string) Size {
 
 func clearScreen() {
 	// TODO: Use terminfo
-	fmt.Printf("\033[2J")
+	fmt.Print("\033[2J")
 }
 
 func restoreScreen() {
-	fmt.Print("\033[39m\033[49m")
+	// TODO: Use terminfo
+	seq := "\033[" + strconv.Itoa(ttySize.Height) + ";1H\033[39m\033[49m\n"
+	fmt.Print(seq)
 }
 
 func resetCursor() {
 	// TODO: Use terminfo
-	fmt.Printf("\033[00H")
+	fmt.Print("\033[00H")
 }
 
 func updateTTYSize() <-chan string {

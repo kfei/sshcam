@@ -71,7 +71,7 @@ func DrawRGB(raw []byte, width, height int, colorful bool) {
 				}
 			}
 			if (y + 2) < height {
-				fmt.Printf("\n")
+				fmt.Print("\n")
 			}
 		}
 	} else {
@@ -92,7 +92,7 @@ func DrawRGB(raw []byte, width, height int, colorful bool) {
 				}
 			}
 			if (y + 2) < height {
-				fmt.Printf("\n")
+				fmt.Print("\n")
 			}
 		}
 	}
@@ -170,7 +170,7 @@ func AsciiDrawRGB(raw []byte, width, height int) {
 				"\033[48;5;%dm\033[38;5;%dm%s", int(bg), int(fg), chr)
 		}
 		if (y + 1) < height {
-			fmt.Printf("\n")
+			fmt.Print("\n")
 		}
 	}
 }
