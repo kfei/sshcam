@@ -75,8 +75,9 @@ func updateTTYSize() <-chan string {
 
 			ttyStatus <- curSize
 
-			// To simulate a limit of FPS
-			time.Sleep(300 * time.Millisecond)
+			// Simulate a limit of FPS
+			sleepDuration := time.Duration(1000 / maxFPS)
+			time.Sleep(sleepDuration * time.Millisecond)
 		}
 	}()
 	return ttyStatus

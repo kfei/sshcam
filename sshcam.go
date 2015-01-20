@@ -15,7 +15,7 @@ type Size struct {
 
 var (
 	h, server, color, asciiOnly          bool
-	port                                 int
+	port, maxFPS                         int
 	listen, device, sizeFlag, user, pass string
 	size                                 Size
 )
@@ -32,6 +32,9 @@ func init() {
 
 	flag.IntVar(&port, []string{"p", "-port"}, 5566,
 		"port to listen")
+
+	flag.IntVar(&maxFPS, []string{"-max-fps"}, 4,
+		"limit the maximum FPS")
 
 	flag.StringVar(&device, []string{"-device"}, "/dev/video0",
 		"the webcam device to open")

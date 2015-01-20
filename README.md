@@ -4,7 +4,7 @@ Webcam live streaming in SSH terminal.
 
 ## See It In Action
 
-[![ScreenShot](screenshot.png?raw=true)](http://youtu.be/SlBTmXILdUQ)
+[![ScreenShot](screenshot.png?raw=true)](http://youtu.be/pAa-pGda9kY)
 
 ## Quick Start
 
@@ -52,7 +52,8 @@ There are several ways to install *sshcam*.
 **Install binary from GitHub**:
 
 ```bash
-curl -sL https://github.com/kfei/sshcam/releases/download/0.9.9/sshcam-x64.tar.bz | tar xj
+# Change <version> to a valid string
+curl -sL https://github.com/kfei/sshcam/releases/download/<version>/sshcam-x64.tar.bz | tar xj
 mv sshcam /usr/local/bin/
 ```
 
@@ -82,10 +83,10 @@ alias sshcam='docker run -it -p 5566:5566 --priviliged sshcam'
 There are still lots of interesting works to be done. Discussions and pull
 requests are both welcome. :)
 
-  - **Better performance**: Currently the pixel rendering is inefficient.
+  - **Port to other platforms**: Maybe by using QT?
+  - **Better performance**: Can the pixel rendering be more efficient?
   - **Even higher resolution**: Try Unicode quadrant block characters [2596 to
     259F](http://www.alanwood.net/unicode/block_elements.html).
-  - **Port to other platforms**: Maybe by using QT?
 
 ## License
 
