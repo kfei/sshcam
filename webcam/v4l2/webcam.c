@@ -286,7 +286,7 @@ void webcam_close(webcam_t *w)
 /**
  * Sets the webcam to capture at the given width and height
  */
-void webcam_resize(webcam_t *w, uint16_t width, uint16_t height)
+int webcam_resize(webcam_t *w, uint16_t width, uint16_t height)
 {
     uint32_t i;
     struct v4l2_format fmt;
@@ -300,7 +300,15 @@ void webcam_resize(webcam_t *w, uint16_t width, uint16_t height)
     fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
     fmt.fmt.pix.colorspace = V4L2_COLORSPACE_REC709;
     fprintf(stderr, "[v4l2] %s: requesting image format %ux%u\n", w->name, width, height);
-    _ioctl(w->fd, VIDIOC_S_FMT, &fmt);
+    if (-1 == _ioctl(w->fd, VIDIOC_S_FMT, &fmt)) {
+        if(EBUSY == errno) {
+            fprintf(stderr, "[v4l2] %s: Resource busy\n", w->name);
+            return -1;
+        } else {
+            fprintf(stderr, "[v4l2] %s: Cannot set size\n", w->name);
+            return -1;
+        }
+    }
 
     // Storing result
     w->width = fmt.fmt.pix.width;
@@ -331,17 +339,17 @@ void webcam_resize(webcam_t *w, uint16_t width, uint16_t height)
     if (-1 == _ioctl(w->fd, VIDIOC_REQBUFS, &req)) {
         if (EINVAL == errno) {
             fprintf(stderr, "[v4l2] %s does not support memory mapping\n", w->name);
-            return;
+            return -1;
         } else {
             fprintf(stderr, "[v4l2] Unknown error with VIDIOC_REQBUFS: %d\n", errno);
-            return;
+            return -1;
         }
     }
 
     // Needs at least 2 buffers
     if (req.count < 2) {
         fprintf(stderr, "[v4l2] Insufficient buffer memory on %s\n", w->name);
-        return;
+        return -1;
     }
 
     // Storing buffers in webcam structure
@@ -351,7 +359,7 @@ void webcam_resize(webcam_t *w, uint16_t width, uint16_t height)
 
     if (!w->buffers) {
         fprintf(stderr, "[v4l2] Out of memory\n");
-        return;
+        return -1;
     }
 
     // Prepare buffers to be memory-mapped
@@ -364,7 +372,7 @@ void webcam_resize(webcam_t *w, uint16_t width, uint16_t height)
 
         if (-1 == _ioctl(w->fd, VIDIOC_QUERYBUF, &buf)) {
             fprintf(stderr, "[v4l2] Could not query buffers on %s\n", w->name);
-            return;
+            return -1;
         }
 
         w->buffers[i].length = buf.length;
@@ -372,7 +380,7 @@ void webcam_resize(webcam_t *w, uint16_t width, uint16_t height)
 
         if (MAP_FAILED == w->buffers[i].start) {
             fprintf(stderr, "[v4l2] Mmap failed\n");
-            return;
+            return -1;
         }
     }
 }

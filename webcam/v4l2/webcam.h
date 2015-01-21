@@ -48,6 +48,6 @@ typedef struct webcam {
 
 webcam_t *webcam_open(const char *dev);
 void webcam_close(webcam_t *w);
-void webcam_resize(webcam_t *w, uint16_t width, uint16_t height);
+int webcam_resize(webcam_t *w, uint16_t width, uint16_t height);
 void webcam_stream(webcam_t *w, bool flag);
 void webcam_grab(webcam_t *w, buffer_t *frame);

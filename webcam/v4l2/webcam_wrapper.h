@@ -5,7 +5,16 @@
 
 webcam_t* go_open_webcam(const char* dev, int width, int height) {
     webcam_t *w = webcam_open(dev);
-    webcam_resize(w, width, height);
+    if (w == NULL) {
+	fprintf(stderr, "[v4l2] Failed to open the webcam.\n");
+	exit(EXIT_FAILURE);
+    }
+
+    if (-1 == webcam_resize(w, width, height)) {
+	fprintf(stderr, "[v4l2] Failed to resize the webcam\n");
+	exit(EXIT_FAILURE);
+    }
+
     webcam_stream(w, true);
     return w;
 }
