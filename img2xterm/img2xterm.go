@@ -12,17 +12,7 @@ const (
 )
 
 var oldfg, oldbg uint8 = colorUndef, colorUndef
-
-func floatMod(x, y float64) float64 {
-	return x - y*math.Floor(x/y)
-}
-
-func floatMin(x, y float64) float64 {
-	if x-y > 0 {
-		return y
-	}
-	return x
-}
+var sequence string
 
 func rawRGB2Pixels(raw []byte) (ret [][3]byte) {
 	for cur := 0; cur < len(raw); cur += 3 {
@@ -41,6 +31,9 @@ func rawRGB2BrightnessPixels(raw []byte) (ret []float64) {
 	return
 }
 
+// DrawRGB draws RGB byte-array to terminal.
+// It takes width and height for recognizing the raw RGB byte-array, and
+// colorful to draw blocks with colors.
 func DrawRGB(raw []byte, width, height int, colorful bool) {
 	var color1, color2, brightness1, brightness2 uint8
 	if colorful {
@@ -71,7 +64,8 @@ func DrawRGB(raw []byte, width, height int, colorful bool) {
 				}
 			}
 			if (y + 2) < height {
-				fmt.Print("\n")
+				fmt.Println(sequence)
+				sequence = ""
 			}
 		}
 	} else {
@@ -92,15 +86,14 @@ func DrawRGB(raw []byte, width, height int, colorful bool) {
 				}
 			}
 			if (y + 2) < height {
-				fmt.Print("\n")
+				fmt.Println(sequence)
+				sequence = ""
 			}
 		}
 	}
 }
 
 func dot(x, y int, color1, color2 uint8) {
-	var sequence string
-
 	// Move cursor
 	sequence += "\033[" + strconv.Itoa(y+1) + ";" + strconv.Itoa(x+1) + "H"
 
@@ -138,9 +131,22 @@ func dot(x, y int, color1, color2 uint8) {
 
 	oldbg, oldfg = bg, fg
 
-	fmt.Print(sequence + str)
+	sequence += str
 }
 
+func floatMod(x, y float64) float64 {
+	return x - y*math.Floor(x/y)
+}
+
+func floatMin(x, y float64) float64 {
+	if x-y > 0 {
+		return y
+	}
+	return x
+}
+
+// AsciiDrawRGB draws a RGB byte-array to terminal.
+// It uses only full block characters and without colors and framecache.
 func AsciiDrawRGB(raw []byte, width, height int) {
 	var chr string
 	pixels := rawRGB2BrightnessPixels(raw)
@@ -166,8 +172,7 @@ func AsciiDrawRGB(raw []byte, width, height int) {
 				chr = "░"
 			}
 
-			fmt.Printf(
-				"\033[48;5;%dm\033[38;5;%dm%s", int(bg), int(fg), chr)
+			fmt.Printf("\033[48;5;%dm\033[38;5;%dm%s", int(bg), int(fg), chr)
 		}
 		if (y + 1) < height {
 			fmt.Print("\n")
