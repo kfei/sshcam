@@ -11,6 +11,21 @@ const (
 	colorTransparent = iota
 )
 
+type Config struct {
+	// Specify width and height of the input image
+	Width, Height int
+
+	// True to draw colorized image
+	// False to draw in grayscale
+	Colorful bool
+
+	// How to compute the distance of colors
+	// 'rgb': Use simple RGB linear distance
+	// 'yiq': Still linear distance, but in YIQ colorspace (default)
+	// 'cie94': Use the CIE94 algorithm, which consumes CPU more
+	DistanceAlgorithm string
+}
+
 var oldfg, oldbg uint8 = colorUndef, colorUndef
 var sequence string
 
@@ -34,7 +49,24 @@ func rawRGB2BrightnessPixels(raw []byte) (ret []float64) {
 // DrawRGB draws RGB byte-array to terminal.
 // It takes width and height for recognizing the raw RGB byte-array, and
 // colorful to draw blocks with colors.
-func DrawRGB(raw []byte, width, height int, colorful bool) {
+func DrawRGB(raw []byte, config *Config) {
+	var colorful bool = false
+
+	// Prepare drawing settings
+	width, height := config.Width, config.Height
+	rgb2Xterm := rgb2XtermYIQ
+	if config.Colorful {
+		colorful = true
+		switch config.DistanceAlgorithm {
+		case "rgb":
+			rgb2Xterm = rgb2XtermRGB
+		case "cie94":
+			rgb2Xterm = rgb2XtermCIE94
+		default:
+			rgb2Xterm = rgb2XtermYIQ
+		}
+	}
+
 	var color1, color2, brightness1, brightness2 uint8
 	if colorful {
 		// Draw image with color
@@ -147,8 +179,9 @@ func floatMin(x, y float64) float64 {
 
 // AsciiDrawRGB draws a RGB byte-array to terminal.
 // It uses only full block characters and without colors and framecache.
-func AsciiDrawRGB(raw []byte, width, height int) {
+func AsciiDrawRGB(raw []byte, config *Config) {
 	var chr string
+	width, height := config.Width, config.Height
 	pixels := rawRGB2BrightnessPixels(raw)
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {

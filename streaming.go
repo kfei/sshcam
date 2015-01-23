@@ -107,16 +107,23 @@ func grabRGBPixels(ttySize Size, wInc, hInc int) (ret []byte) {
 	return
 }
 
-func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
+func streaming(ttyStatus <-chan string, wg *sync.WaitGroup) {
 	var interrupt bool = false
 	defer wg.Done()
 
+	// Signal handling for normally exit
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, os.Interrupt)
 	go func() {
 		<-sigchan
 		interrupt = true
 	}()
+
+	// Prepare settings for imgxterm
+	config := &img2xterm.Config{
+		Colorful:          colorful,
+		DistanceAlgorithm: distanceAlgorithm,
+	}
 
 	log.Println("Start streaming, press Ctrl-c to exit...")
 	time.Sleep(1500 * time.Millisecond)
@@ -133,10 +140,12 @@ func draw(ttyStatus <-chan string, wg *sync.WaitGroup) {
 		// Fetch image from webcam and call img2xterm to draw
 		if asciiOnly {
 			rgbRaw := grabRGBPixels(ttySize, 1, 1)
-			img2xterm.AsciiDrawRGB(rgbRaw, ttySize.Width, ttySize.Height)
+			config.Width, config.Height = ttySize.Width, ttySize.Height
+			img2xterm.AsciiDrawRGB(rgbRaw, config)
 		} else {
 			rgbRaw := grabRGBPixels(ttySize, 1, 2)
-			img2xterm.DrawRGB(rgbRaw, ttySize.Width, ttySize.Height*2, color)
+			config.Width, config.Height = ttySize.Width, ttySize.Height*2
+			img2xterm.DrawRGB(rgbRaw, config)
 		}
 	}
 

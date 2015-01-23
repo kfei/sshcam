@@ -5,7 +5,9 @@ import (
 )
 
 var chromaWeight float64 = 1.0
-var labtable [256 * 3]float64
+var rgbTable [256 * 3]uint8
+var yiqTable [256 * 3]float64
+var labTable [256 * 3]float64
 var valueRange [6]uint8 = [6]uint8{0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff}
 
 func xterm2RGB(color uint8, rgb []uint8) {
@@ -21,7 +23,17 @@ func xterm2RGB(color uint8, rgb []uint8) {
 	}
 }
 
-func srgb2Lab(red, green, blue uint8, l, aa, bb *float64) {
+func srgb2YIQ(red, green, blue uint8, y, i, q *float64) {
+	r := float64(red) / 255.0
+	g := float64(green) / 255.0
+	b := float64(blue) / 255.0
+
+	*y = 0.299*r + 0.587*g + 0.144*b
+	*i = (0.595716*r + -0.274453*g + -0.321263*b) * chromaWeight
+	*q = (0.211456*r + -0.522591*g + 0.311135*b) * chromaWeight
+}
+
+func srgb2LAB(red, green, blue uint8, l, aa, bb *float64) {
 	var r, g, b float64
 	var rl, gl, bl float64
 	var x, y, z float64
@@ -97,16 +109,48 @@ func cie94(l1, a1, b1, l2, a2, b2 float64) (distance float64) {
 	return
 }
 
-func rgb2Xterm(r, g, b uint8) (ret uint8) {
-	// Use CIE94 algorithm to compute the color distance
-	var i int = 16
+func rgb2XtermCIE94(r, g, b uint8) (ret uint8) {
 	var d, smallestDistance = math.MaxFloat64, math.MaxFloat64
 	var l, aa, bb float64
 
-	srgb2Lab(r, g, b, &l, &aa, &bb)
+	srgb2LAB(r, g, b, &l, &aa, &bb)
 
-	for ; i < 256; i++ {
-		d = cie94(l, aa, bb, labtable[i*3], labtable[i*3+1], labtable[i*3+2])
+	for i := 16; i < 256; i++ {
+		d = cie94(l, aa, bb, labTable[i*3], labTable[i*3+1], labTable[i*3+2])
+		if d < smallestDistance {
+			smallestDistance = d
+			ret = uint8(i)
+		}
+	}
+
+	return
+}
+
+func rgb2XtermYIQ(r, g, b uint8) (ret uint8) {
+	var d, smallestDistance = math.MaxFloat64, math.MaxFloat64
+	var y, ii, q float64
+
+	srgb2YIQ(r, g, b, &y, &ii, &q)
+
+	for i := 16; i < 256; i++ {
+		d = (y-yiqTable[i*3])*(y-yiqTable[i*3]) +
+			(ii-yiqTable[i*3+1])*(ii-yiqTable[i*3+1]) +
+			(q-yiqTable[i*3+2])*(q-yiqTable[i*3+2])
+		if d < smallestDistance {
+			smallestDistance = d
+			ret = uint8(i)
+		}
+	}
+
+	return
+}
+
+func rgb2XtermRGB(r, g, b uint8) (ret uint8) {
+	var d, smallestDistance = math.MaxInt64, math.MaxInt64
+
+	for i := 16; i < 256; i++ {
+		dr, dg, db := int(rgbTable[i*3]-r), int(rgbTable[i*3+1]-g), int(rgbTable[i*3+2]-b)
+		d = dr*dr + dg*dg + db*db
 		if d < smallestDistance {
 			smallestDistance = d
 			ret = uint8(i)
@@ -117,14 +161,29 @@ func rgb2Xterm(r, g, b uint8) (ret uint8) {
 }
 
 func init() {
+	// TODO: Make these tables initialize dynamically
 	var rgb []uint8 = []uint8{0, 0, 0}
 	var l, a, b float64
+	var y, i, q float64
 
-	for i := 16; i < 256; i++ {
-		xterm2RGB(uint8(i), rgb)
-		srgb2Lab(rgb[0], rgb[1], rgb[2], &l, &a, &b)
-		labtable[i*3] = l
-		labtable[i*3+1] = a
-		labtable[i*3+2] = b
+	for j := 16; j < 256; j++ {
+		xterm2RGB(uint8(j), rgb)
+
+		// Initial RGB table
+		rgbTable[j*3] = rgb[0]
+		rgbTable[j*3+1] = rgb[1]
+		rgbTable[j*3+2] = rgb[2]
+
+		// Initial LAB table
+		srgb2LAB(rgb[0], rgb[1], rgb[2], &l, &a, &b)
+		labTable[j*3] = l
+		labTable[j*3+1] = a
+		labTable[j*3+2] = b
+
+		// Initial YIQ table
+		srgb2YIQ(rgb[0], rgb[1], rgb[2], &y, &i, &q)
+		yiqTable[j*3] = y
+		yiqTable[j*3+1] = i
+		yiqTable[j*3+2] = q
 	}
 }
