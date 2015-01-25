@@ -2,8 +2,6 @@
 
 Webcam live streaming in SSH terminal.
 
-## See It In Action
-
 [![ScreenShot](screenshot.png?raw=true)](http://youtu.be/pAa-pGda9kY)
 
 ## Quick Start
@@ -35,7 +33,8 @@ more information. As an example:
 ```bash
 sshcam --server --listen=127.0.0.1 --port=22222 \
        --user=john --pass=nhoj \
-       --device=/dev/video0 --color --size=1280x720
+       --device=/dev/video0 --size=1280x720 \
+       --color --max-fps=2
 ```
 
 ## Requirements
@@ -83,7 +82,7 @@ alias sshcam='docker run -it -p 5566:5566 --priviliged sshcam'
 There are still lots of interesting works to be done. Discussions and pull
 requests are both welcome. :)
 
-  - **Port to other platforms**: Maybe by using QT?
+  - **Port to other platforms**: Maybe by using OpenCV?
   - **Better performance**: Can the pixel rendering be more efficient?
   - **Even higher resolution**: Try Unicode quadrant block characters [2596 to
     259F](http://www.alanwood.net/unicode/block_elements.html).
