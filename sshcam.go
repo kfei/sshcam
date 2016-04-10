@@ -6,7 +6,7 @@ import (
 
 	flag "github.com/docker/docker/pkg/mflag"
 	"github.com/kfei/sshcam/server/sshd"
-	webcam "github.com/kfei/sshcam/webcam/v4l2"
+	w "github.com/kfei/sshcam/webcam"
 )
 
 type Size struct {
@@ -18,6 +18,7 @@ var (
 	port, maxFPS                                            int
 	listen, device, sizeFlag, user, pass, distanceAlgorithm string
 	size                                                    Size
+	webcam                                                  *w.Webcam
 )
 
 func init() {
@@ -78,6 +79,7 @@ func main() {
 		var wg sync.WaitGroup
 
 		// Initialize the webcam device
+		webcam = &w.Webcam{}
 		webcam.OpenWebcam(device, size.Width, size.Height)
 		defer webcam.CloseWebcam()
 

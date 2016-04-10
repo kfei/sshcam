@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/kfei/sshcam/img2xterm"
-	webcam "github.com/kfei/sshcam/webcam/v4l2"
 )
 
 var ttySize Size = Size{0, 0}
